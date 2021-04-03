@@ -129,6 +129,23 @@ public:
 	virtual void rewindDirectory(void) {
 		sdfatfile.rewindDirectory();
 	}
+
+#ifdef FS_FILE_SUPPORT_DATES
+	// These will all return false as only some FS support it.
+  	virtual bool getAccessDateTime(uint16_t* pdate, uint16_t* ptime) {
+  		return sdfatfile.getAccessDateTime(pdate, ptime);
+  	}
+  	virtual bool getCreateDateTime(uint16_t* pdate, uint16_t* ptime) {
+  		return sdfatfile.getCreateDateTime(pdate, ptime);
+  	}
+  	virtual bool getModifyDateTime(uint16_t* pdate, uint16_t* ptime) {
+  		return sdfatfile.getModifyDateTime(pdate, ptime);
+  	}
+  	virtual bool timestamp(uint8_t flags, uint16_t year, uint8_t month, uint8_t day,
+                 uint8_t hour, uint8_t minute, uint8_t second) {
+  		return sdfatfile.timestamp(flags, year, month, day, hour, minute, second);
+  	}
+#endif
 private:
 	SDFAT_FILE sdfatfile;
 	char *filename;
