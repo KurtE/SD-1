@@ -92,7 +92,10 @@ bool SDClass::begin(uint8_t csPin) {
 		#if defined(__IMXRT1062__)
 		// start off with just trying on T4.x
 		cdPin_ = _SD_DAT3;
-		if (!ret) pinMode(_SD_DAT3, INPUT_PULLDOWN);
+		if (!ret) {
+			pinMode(_SD_DAT3, INPUT_PULLDOWN);
+			delayMicroseconds(5);
+		}
 		#endif
 		return ret;
 	}
@@ -140,17 +143,18 @@ bool SDClass::mediaPresent()
 				//Serial.print("status=offline");
 				ret = false;
 				#ifdef _SD_DAT3
-				if (csPin_ == BUILTIN_SDCARD) 
+				if (csPin_ == BUILTIN_SDCARD) {
 					pinMode(_SD_DAT3, INPUT_PULLDOWN);
+					delayMicroseconds(5);
+				}
 				#endif
 			} else {
 				//Serial.print("status=present");
 				ret = true;
 			}
 		} else {
-			// TODO: need a quick test, only call begin if likely present
 			ret = true; // assume we need to check
-
+			// quick test with cdPin_ or _SD_DAT3, only call restart() if likely present
 			#ifdef _SD_DAT3
 			if (csPin_ == BUILTIN_SDCARD) ret = digitalReadFast(_SD_DAT3);
 			else
@@ -158,11 +162,15 @@ bool SDClass::mediaPresent()
 			{
 				if (cdPin_ < NUM_DIGITAL_PINS) ret = digitalRead(cdPin_);
 			}
-			// now try to restart
-			if (ret)
-			{
+			if (ret) {
+				// now try to restart
 				ret = sdfs.restart();
-				// bugbug:: if it fails and builtin may need to start pinMode again...
+				#ifdef _SD_DAT3
+				if (!ret) {
+					pinMode(_SD_DAT3, INPUT_PULLDOWN);
+					delayMicroseconds(5);
+				}
+				#endif
 			}
 			//Serial.print(ret ? "begin ok" : "begin nope");
 		}
